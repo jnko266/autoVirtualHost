@@ -23,10 +23,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check if required variables are set
-if [[ -z "${COUNTRY}" || -z "${STATE}" || -z "${CITY}" || -z "${ORG}" || -z "${OU}" || -z "${CN}" || -z "${SERVER_ADMIN}" ]]; then
-	echo "Please set the required environment variables: COUNTRY, STATE, CITY, ORG, OU, CN, SERVER_ADMIN."
-	exit 1
-fi
+REQUIRED_VARS=("COUNTRY" "STATE" "CITY" "ORG" "OU" "CN" "SERVER_ADMIN")
+for VAR_NAME in "${REQUIRED_VARS[@]}"; do
+	VAR_VALUE=$(eval echo \$$VAR_NAME)
+	if [[ -z "${VAR_VALUE}" ]]; then
+		echo "Error: The required environment variable '${VAR_NAME}' is not set."
+		exit 1
+	fi
+done
 
 # Update the package list
 sudo apt-get update
