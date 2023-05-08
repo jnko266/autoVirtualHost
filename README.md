@@ -27,7 +27,7 @@ export SERVER_ADMIN="hello@example.com" \
 SERVER_NAME="127.0.0.1" \
 SERVER_ALIAS=localhost
 ```
-3. Make the script executable:
+5. Make the script executable:
 `sudo chmod +x run.sh`
-4. Run the script as root while preserving the environment variables:
+6. Run the script as root while preserving the environment variables:
 `sudo -E ./run.sh`
