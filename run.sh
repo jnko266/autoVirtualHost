@@ -32,6 +32,12 @@ for VAR_NAME in "${REQUIRED_VARS[@]}"; do
 	fi
 done
 
+# Check that $CN is the same as $SERVER_NAME
+if [ "$CN" != "$SERVER_NAME" ]; then
+	echo "Error: The environment variable 'CN' must be the same as 'SERVER_NAME'."
+	exit 1
+fi
+
 # Update the package list
 sudo apt-get update
 
