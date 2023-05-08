@@ -70,6 +70,9 @@ sudo openssl req -new -key /etc/apache2/ssl/server/server.key -out /etc/apache2/
 # Sign the server certificate with the root CA for 10 days
 sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/ssl/rootCA/rootCA.crt -CAkey /etc/apache2/ssl/rootCA/rootCA.key -CAcreateserial -out /etc/apache2/ssl/server/server.crt -days 10 -sha256
 
+# Source the Apache environment variables
+source /etc/apache2/envvars
+
 # Create a virtual host configuration file
 sudo sh -c "echo '<VirtualHost *:80>
 	ServerAdmin ${SERVER_ADMIN}
