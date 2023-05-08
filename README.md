@@ -1,5 +1,5 @@
 # Apache Auto Virtual Host Utility
-This repository has a script in it that aims to automatically install all necessary dependencies, create a self-signed certificate (and CA for signing this certificate), create an Apache virtual host and configure it to use the certificate, and finally, add a record to crontab to renew the certificate @weekly months.  
+This repository has a script in it that aims to automatically install all necessary dependencies, create a self-signed certificate (and CA for signing this certificate), create an Apache virtual host and configure it to use the certificate, and finally, add a record to crontab to renew the certificate `@weekly` months.  
 The script can also use an existing CA if they are provided using the `--ownca` flag (which is supposed to be the path to the CA certificate and key in PEM format).
 # How to use
 1. Clone this repository
