@@ -79,6 +79,7 @@ sudo openssl req -new -key /etc/apache2/ssl/server/server.key -out /etc/apache2/
 
 # Sign the server certificate with the root CA for 10 days
 sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/ssl/rootCA/rootCA.crt -CAkey /etc/apache2/ssl/rootCA/rootCA.key -CAcreateserial -out /etc/apache2/ssl/server/server.crt -days 10 -sha256
+sudo bash -c 'cat /etc/apache2/ssl/server/server.crt /etc/apache2/ssl/rootCA/rootCA.crt > /etc/apache2/ssl/server/server-chain.crt'
 
 # Source the Apache environment variables
 source /etc/apache2/envvars
@@ -105,7 +106,7 @@ sudo sh -c "echo '<VirtualHost *:80>
 		ErrorLog ${APACHE_LOG_DIR}/error.log
 		CustomLog ${APACHE_LOG_DIR}/ssl_access.log combined
 		SSLEngine on
-		SSLCertificateFile /etc/apache2/ssl/server/server.crt
+		SSLCertificateFile /etc/apache2/ssl/server/server-chain.crt
 		SSLCertificateKeyFile /etc/apache2/ssl/server/server.key
 		<FilesMatch \"\.(cgi|shtml|phtml|php)$\">
 			SSLOptions +StdEnvVars
@@ -156,6 +157,7 @@ if [ \${TIME_DIFF_DAYS} -le \${THRESHOLD} ]; then
 
 	# Sign the server certificate with the root CA for 10 days
 	sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/ssl/rootCA/rootCA.crt -CAkey /etc/apache2/ssl/rootCA/rootCA.key -CAcreateserial -out /etc/apache2/ssl/server/server.crt -days 10 -sha256
+	sudo bash -c '\''cat /etc/apache2/ssl/server/server.crt /etc/apache2/ssl/rootCA/rootCA.crt > /etc/apache2/ssl/server/server-chain.crt'\''
 
 	# Restart Apache to apply changes
 	sudo systemctl restart apache2
