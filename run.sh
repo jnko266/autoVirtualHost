@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check if required variables are set
-REQUIRED_VARS=("COUNTRY" "STATE" "CITY" "ORG" "OU" "CN" "SERVER_ADMIN")
+REQUIRED_VARS=("COUNTRY" "STATE" "CITY" "ORG" "OU" "CN" "SERVER_ADMIN" "SERVER_NAME" "SERVER_ALIAS")
 for VAR_NAME in "${REQUIRED_VARS[@]}"; do
 	VAR_VALUE=$(eval echo \$$VAR_NAME)
 	if [[ -z "${VAR_VALUE}" ]]; then
@@ -73,6 +73,8 @@ sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/s
 # Create a virtual host configuration file
 sudo sh -c "echo '<VirtualHost *:80>
 	ServerAdmin ${SERVER_ADMIN}
+	ServerName ${SERVER_NAME}
+	ServerAlias ${SERVER_ALIAS}
 	DocumentRoot /var/www/html
 	ErrorLog ${APACHE_LOG_DIR}/error.log
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
@@ -84,6 +86,8 @@ sudo sh -c "echo '<VirtualHost *:80>
 <IfModule mod_ssl.c>
 	<VirtualHost *:443>
 		ServerAdmin ${SERVER_ADMIN}
+		ServerName ${SERVER_NAME}
+		ServerAlias ${SERVER_ALIAS}
 		DocumentRoot /var/www/html
 		ErrorLog ${APACHE_LOG_DIR}/error.log
 		CustomLog ${APACHE_LOG_DIR}/ssl_access.log combined
@@ -142,6 +146,9 @@ if [ \${TIME_DIFF_DAYS} -le \${THRESHOLD} ]; then
 
 	# Restart Apache to apply changes
 	sudo systemctl restart apache2
+	echo \"Certificate has been renewed.\"
+else
+	echo \"Certificate is not close to expiration. No renewal is needed.\"
 fi
 ' > /usr/local/bin/renew_cert.sh"
 
