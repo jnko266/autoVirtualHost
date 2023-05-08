@@ -60,16 +60,16 @@ if [ -z "$OWNCA" ]; then
 
 	# Generate a root CA with a 10-year validity
 	sudo openssl genrsa -out /etc/apache2/ssl/rootCA/rootCA.key 4096
-	sudo openssl req -x509 -new -nodes -key /etc/apache2/ssl/rootCA/rootCA.key -sha256 -days 3650 -out /etc/apache2/ssl/rootCA/rootCA.crt -subj "/C=${CA_COUNTRY}/ST=${CA_STATE}/L=${CA_CITY}/O=${CA_ORG}/OU=${CA_OU}/CN=${CA_CN}"
+	sudo openssl req -x509 -new -nodes -key /etc/apache2/ssl/rootCA/rootCA.key -sha256 -days 3650 -out /etc/apache2/ssl/rootCA/rootCA.pem -subj "/C=${CA_COUNTRY}/ST=${CA_STATE}/L=${CA_CITY}/O=${CA_ORG}/OU=${CA_OU}/CN=${CA_CN}"
 else
 	# Check if script has permission to access the existing CA
-	if [ ! -r "${CA_PATH}.crt" ] || [ ! -r "${CA_PATH}.key" ]; then
+	if [ ! -r "${CA_PATH}.pem" ] || [ ! -r "${CA_PATH}.key" ]; then
 		echo "Script does not have permission to access the existing CA files or they do not exist."
 		exit 1
 	fi
 
 	# Use the existing CA
-	sudo cp "${CA_PATH}.crt" /etc/apache2/ssl/rootCA/rootCA.crt
+	sudo cp "${CA_PATH}.pem" /etc/apache2/ssl/rootCA/rootCA.pem
 	sudo cp "${CA_PATH}.key" /etc/apache2/ssl/rootCA/rootCA.key
 fi
 
@@ -78,8 +78,10 @@ sudo openssl genrsa -out /etc/apache2/ssl/server/server.key 2048
 sudo openssl req -new -key /etc/apache2/ssl/server/server.key -out /etc/apache2/ssl/server/server.csr -subj "/C=${COUNTRY}/ST=${STATE}/L=${CITY}/O=${ORG}/OU=${OU}/CN=${CN}"
 
 # Sign the server certificate with the root CA for 10 days
-sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/ssl/rootCA/rootCA.crt -CAkey /etc/apache2/ssl/rootCA/rootCA.key -CAcreateserial -out /etc/apache2/ssl/server/server.crt -days 10 -sha256
-sudo bash -c 'cat /etc/apache2/ssl/server/server.crt /etc/apache2/ssl/rootCA/rootCA.crt > /etc/apache2/ssl/server/server-chain.crt'
+sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/ssl/rootCA/rootCA.pem -CAkey /etc/apache2/ssl/rootCA/rootCA.key -CAcreateserial -out /etc/apache2/ssl/server/server.crt -days 10 -sha256
+
+# Create a certificate chain file
+sudo bash -c 'cat /etc/apache2/ssl/server/server.pem /etc/apache2/ssl/rootCA/rootCA.pem > /etc/apache2/ssl/server/server-chain.pem'
 
 # Source the Apache environment variables
 source /etc/apache2/envvars
@@ -106,7 +108,7 @@ sudo sh -c "echo '<VirtualHost *:80>
 		ErrorLog ${APACHE_LOG_DIR}/error.log
 		CustomLog ${APACHE_LOG_DIR}/ssl_access.log combined
 		SSLEngine on
-		SSLCertificateFile /etc/apache2/ssl/server/server-chain.crt
+		SSLCertificateFile /etc/apache2/ssl/server/server-chain.pem
 		SSLCertificateKeyFile /etc/apache2/ssl/server/server.key
 		<FilesMatch \"\.(cgi|shtml|phtml|php)$\">
 			SSLOptions +StdEnvVars
@@ -135,10 +137,10 @@ sudo systemctl restart apache2
 sudo sh -c "echo '#!/bin/bash
 
 # Set the threshold (in days) for renewing the certificate
-THRESHOLD=2
+THRESHOLD=3
 
 # Get the expiration date of the current certificate
-EXPIRATION_DATE=\$(openssl x509 -in /etc/apache2/ssl/server/server.crt -enddate -noout | cut -d \"=\" -f 2)
+EXPIRATION_DATE=\$(openssl x509 -in /etc/apache2/ssl/server/server.pem -enddate -noout | cut -d \"=\" -f 2)
 
 # Convert the expiration date to the number of seconds since 1970-01-01 00:00:00 UTC
 EXPIRATION_DATE_SEC=\$(date -d \"\${EXPIRATION_DATE}\" +%s)
@@ -156,8 +158,10 @@ if [ \${TIME_DIFF_DAYS} -le \${THRESHOLD} ]; then
 	sudo openssl req -new -key /etc/apache2/ssl/server/server.key -out /etc/apache2/ssl/server/server.csr -subj \"/C=${COUNTRY}/ST=${STATE}/L=${CITY}/O=${ORG}/OU=${OU}/CN=${CN}\"
 
 	# Sign the server certificate with the root CA for 10 days
-	sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/ssl/rootCA/rootCA.crt -CAkey /etc/apache2/ssl/rootCA/rootCA.key -CAcreateserial -out /etc/apache2/ssl/server/server.crt -days 10 -sha256
-	sudo bash -c '\''cat /etc/apache2/ssl/server/server.crt /etc/apache2/ssl/rootCA/rootCA.crt > /etc/apache2/ssl/server/server-chain.crt'\''
+	sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/ssl/rootCA/rootCA.pem -CAkey /etc/apache2/ssl/rootCA/rootCA.key -CAcreateserial -out /etc/apache2/ssl/server/server.pem -days 10 -sha256
+
+	# Create a certificate chain file
+	sudo bash -c '\''cat /etc/apache2/ssl/server/server.pem /etc/apache2/ssl/rootCA/rootCA.pem > /etc/apache2/ssl/server/server-chain.pem'\''
 
 	# Restart Apache to apply changes
 	sudo systemctl restart apache2
