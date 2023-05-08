@@ -1,0 +1,15 @@
+export COUNTRY=GB \
+STATE=England \
+CITY=London \
+ORG="Your Organisation Name" \
+OU="Department Name" \
+CN="Local Certificate Common Name" \
+CA_COUNTRY=US \
+CA_STATE=California \
+CA_CITY="San Francisco" \
+CA_ORG="Your Organisation Name" \
+CA_OU=main \
+CA_CN="CA Common Name" \
+SERVER_ADMIN="hello@example.com" \
+SERVER_NAME="127.0.0.1" \
+SERVER_ALIAS=localhost
