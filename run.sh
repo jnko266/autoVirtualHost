@@ -48,9 +48,19 @@ sudo mkdir -p /etc/apache2/ssl/server
 
 # Create a self-signed root CA certificate if no existing CA is specified
 if [ -z "$OWNCA" ]; then
+	# Check if required variables for the root CA are set
+	REQUIRED_VARS=("CA_COUNTRY" "CA_STATE" "CA_CITY" "CA_ORG" "CA_OU" "CA_CN")
+	for VAR_NAME in "${REQUIRED_VARS[@]}"; do
+		VAR_VALUE=$(eval echo \$$VAR_NAME)
+		if [[ -z "${VAR_VALUE}" ]]; then
+			echo "Error: The required environment variable '${VAR_NAME}' is not set."
+			exit 1
+		fi
+	done
+
 	# Generate a root CA with a 10-year validity
 	sudo openssl genrsa -out /etc/apache2/ssl/rootCA/rootCA.key 4096
-	sudo openssl req -x509 -new -nodes -key /etc/apache2/ssl/rootCA/rootCA.key -sha256 -days 3650 -out /etc/apache2/ssl/rootCA/rootCA.crt -subj "/C=${COUNTRY}/ST=${STATE}/L=${CITY}/O=${ORG}/OU=${OU}/CN=${CN}"
+	sudo openssl req -x509 -new -nodes -key /etc/apache2/ssl/rootCA/rootCA.key -sha256 -days 3650 -out /etc/apache2/ssl/rootCA/rootCA.crt -subj "/C=${CA_COUNTRY}/ST=${CA_STATE}/L=${CA_CITY}/O=${CA_ORG}/OU=${CA_OU}/CN=${CA_CN}"
 else
 	# Check if script has permission to access the existing CA
 	if [ ! -r "${CA_PATH}.crt" ] || [ ! -r "${CA_PATH}.key" ]; then
