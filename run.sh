@@ -83,6 +83,9 @@ sudo sh -c "echo 'subjectAltName = IP:${SERVER_NAME}' > /etc/apache2/ssl/server/
 # Sign the server certificate with the root CA for 10 days
 sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/ssl/rootCA/rootCA.pem -CAkey /etc/apache2/ssl/rootCA/rootCA.key -CAcreateserial -out /etc/apache2/ssl/server/server.pem -days 10 -sha256 -extfile /etc/apache2/ssl/server/server.ext
 
+# Remove used files
+sudo rm /etc/apache2/ssl/server/server.csr
+
 # Create a certificate chain file
 sudo bash -c 'cat /etc/apache2/ssl/server/server.pem /etc/apache2/ssl/rootCA/rootCA.pem > /etc/apache2/ssl/server/server-chain.pem'
 
@@ -162,6 +165,9 @@ if [ \${TIME_DIFF_DAYS} -le \${THRESHOLD} ]; then
 
 	# Sign the server certificate with the root CA for 10 days
 	sudo openssl x509 -req -in /etc/apache2/ssl/server/server.csr -CA /etc/apache2/ssl/rootCA/rootCA.pem -CAkey /etc/apache2/ssl/rootCA/rootCA.key -CAcreateserial -out /etc/apache2/ssl/server/server.pem -days 10 -sha256 -extfile /etc/apache2/ssl/server/server.ext
+
+	# Remove used files
+	sudo rm /etc/apache2/ssl/server/server.csr
 
 	# Create a certificate chain file
 	sudo bash -c '\''cat /etc/apache2/ssl/server/server.pem /etc/apache2/ssl/rootCA/rootCA.pem > /etc/apache2/ssl/server/server-chain.pem'\''
